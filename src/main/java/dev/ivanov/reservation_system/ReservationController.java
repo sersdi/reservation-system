@@ -57,7 +57,7 @@ public class ReservationController {
     ){
         log.info("Called updateReservation: id={},reservationToUpdate={}", id, reservationToUpdate);
         var updated = reservationService.updateReservation(id, reservationToUpdate);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok((Reservation) updated);
     }
 
     @DeleteMapping("/{id}")
@@ -75,6 +75,8 @@ public class ReservationController {
         }
 
     }
+
+//    @PostMapping
 
 
 
