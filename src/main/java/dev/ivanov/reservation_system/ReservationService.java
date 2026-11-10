@@ -82,4 +82,55 @@ public class ReservationService {
         }
         reservationMap.remove(id);
     }
+
+    public Reservation approveReservation(Long id) {
+        if(!reservationMap.containsKey(id)) {
+            throw new NoSuchElementException("Not found reservation by id = " + id);
+        }
+
+        var reservation =  reservationMap.get(id);
+
+        if(reservation.status() != ReservationStatus.PENDING) {
+            throw new IllegalArgumentException("Status should be PENDING for new reservation: status=" + reservation.status());
+        }
+
+        var isConflict = isReservationConflict(reservation);
+        if(isConflict) {
+            throw new IllegalStateException("Conflict detected");
+        }
+
+        var approvedReservation = new Reservation(
+                reservation.id(),
+                reservation.userId(),
+                reservation.roomId(),
+                reservation.startDate(),
+                reservation.endDate(),
+                ReservationStatus.APPROVED
+        );
+        reservationMap.put(approvedReservation.id(), approvedReservation);
+        return approvedReservation;
+    }
+
+    private boolean isReservationConflict(
+            Reservation reservation
+    ){
+        for(Reservation existingReservation : reservationMap.values()){
+            if(reservation.id().equals(existingReservation.id())){
+                continue;
+            }
+            if(!reservation.roomId().equals(existingReservation.roomId())){
+                continue;
+            }
+            if(!existingReservation.status().equals(ReservationStatus.APPROVED)){
+                continue;
+            }
+            if(reservation.startDate().isBefore(existingReservation.endDate())
+                    && existingReservation.startDate().isBefore(reservation.endDate())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
+
