@@ -40,7 +40,7 @@ public class ReservationController {
     public ResponseEntity<List<Reservation>> getAllReservations(
     ) {
         log.info("Called getAllReservations");
-        return ResponseEntity.ok(reservationService.findAllReservations());
+        return ResponseEntity.ok(reservationService.findAllReservation());
     }
 
     @PostMapping()
