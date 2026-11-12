@@ -1,8 +1,10 @@
 package dev.ivanov.reservation_system;
 
 
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,7 +22,34 @@ public class GlobalExceptionHandler {
         log.error("Handle exception", e);
 
         return ResponseEntity
-                .status(500)
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(e.getMessage());
     }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<String> handleEntityNotFound(
+            EntityNotFoundException e
+    ){
+        log.error("Handle entityNotFoundException", e);
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler( exception = {
+            IllegalArgumentException.class,
+            IllegalStateException.class
+    })
+    public ResponseEntity<String> handleBadRequest(
+            Exception e
+    ){
+        log.error("Handle handleBadRequest", e);
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
+    }
+
+
 }
