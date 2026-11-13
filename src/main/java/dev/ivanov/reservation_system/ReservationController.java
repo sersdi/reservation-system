@@ -7,8 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.NoSuchElementException;
-
 
 @RestController
 @RequestMapping("/reservation")     //указали для всех обработчиков
@@ -27,13 +25,9 @@ public class ReservationController {
             @PathVariable("id") Long id     // из пути передаётся в параметр
     ) {
         log.info("Called getReservationById: id=" + id);
-        try{
             return ResponseEntity.status(HttpStatus.OK)
                     .body(reservationService.getReservationById(id));
-        } catch (NoSuchElementException e){
-            return ResponseEntity.notFound()
-                    .build();
-        }
+
     }
 
     @GetMapping()                                   //методы типа Get могут быть вызваны из браузера, Post - нет
@@ -65,14 +59,10 @@ public class ReservationController {
             @PathVariable("id") Long id
     ){
         log.info("Called deleteReservation: id={}", id);
-        try{
-            reservationService.cancelReservation(id);
-            return ResponseEntity.ok()
-                    .build();
-        } catch (NoSuchElementException e){
-            return ResponseEntity.notFound()
-                    .build();
-        }
+        reservationService.cancelReservation(id);
+        return ResponseEntity.ok()
+                .build();
+
 
     }
 

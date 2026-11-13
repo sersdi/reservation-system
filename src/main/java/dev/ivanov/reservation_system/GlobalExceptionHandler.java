@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.time.LocalDateTime;
+
 @ControllerAdvice               //вешаем над классом @ControllerAdvice что бы спринг понял что класс является обработчиком ошибок
 public class GlobalExceptionHandler {
 
@@ -16,39 +18,57 @@ public class GlobalExceptionHandler {
 
                                                             //(Exception.class)-означает что обрабатывает все исключения
     @ExceptionHandler(Exception.class)                     //@ExceptionHandler что бы спринг понял что метод обрабатывает ошибки
-    public ResponseEntity<String> handleGenericException(    // <Void> означает что метод будет возвращать ответ без тела
+    public ResponseEntity<ErrorResponseDto> handleGenericException(    // <Void> означает что метод будет возвращать ответ без тела
             Exception e
     ){
         log.error("Handle exception", e);
 
+        var errorDto = new ErrorResponseDto(
+                "Internal server error",
+                e.getMessage(),
+                LocalDateTime.now()
+        );
+
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(e.getMessage());
+                .body(errorDto);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> handleEntityNotFound(
+    public ResponseEntity<ErrorResponseDto> handleEntityNotFound(
             EntityNotFoundException e
     ){
         log.error("Handle entityNotFoundException", e);
 
+        var errorDto = new ErrorResponseDto(
+                "Entity not found",
+                e.getMessage(),
+                LocalDateTime.now()
+        );
+
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
+                .body(errorDto);
     }
 
     @ExceptionHandler( exception = {
             IllegalArgumentException.class,
             IllegalStateException.class
     })
-    public ResponseEntity<String> handleBadRequest(
+    public ResponseEntity<ErrorResponseDto> handleBadRequest(
             Exception e
     ){
         log.error("Handle handleBadRequest", e);
 
+        var errorDto = new ErrorResponseDto(
+                "Bad request",
+                e.getMessage(),
+                LocalDateTime.now()
+        );
+
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
+                .body(errorDto);
     }
 
 
