@@ -1,5 +1,6 @@
 package dev.ivanov.reservation_system;
 
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -38,7 +39,9 @@ public class ReservationController {
     }
 
     @PostMapping()
-    public ResponseEntity<Reservation> createReservation(@RequestBody Reservation reservationToCreate) {    //@RequestBody - получаем json файл от тела запроса пользователя
+    public ResponseEntity<Reservation> createReservation(       //@Valid что бы спринг начал валидировать
+            @RequestBody @Valid Reservation reservationToCreate //@RequestBody - получаем json файл от тела запроса пользователя
+    ) {
         log.info("Called createReservation: reservation=" + reservationToCreate);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(reservationService.createReservation(reservationToCreate));
@@ -47,7 +50,7 @@ public class ReservationController {
     @PutMapping("/{id}")
     public ResponseEntity<Reservation> updateReservation(
             @PathVariable("id") Long id,
-            @RequestBody Reservation reservationToUpdate
+            @RequestBody @Valid Reservation reservationToUpdate
     ){
         log.info("Called updateReservation: id={},reservationToUpdate={}", id, reservationToUpdate);
         var updated = reservationService.updateReservation(id, reservationToUpdate);

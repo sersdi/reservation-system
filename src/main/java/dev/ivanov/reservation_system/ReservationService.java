@@ -20,12 +20,15 @@ public class ReservationService {
         this.repository = repository;
     }
 
-    public Reservation getReservationById(Long id) {
+    public Reservation getReservationById(
+            Long id
+    ) {
         ReservationEntity reservationEntity = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Reservation not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Reservation not found with id: " + id
+                ));
         return toDomainReservation(reservationEntity);
     }
-
 
     public List<Reservation> findAllReservation() {
         List<ReservationEntity> allEntities = repository.findAll();
@@ -35,12 +38,14 @@ public class ReservationService {
     }
 
    public Reservation createReservation(Reservation reservationToCreate) {
-        if (reservationToCreate.id() !=null){
-            throw new IllegalArgumentException("Id should be null for new reservation");
-        }
         if(reservationToCreate.status() !=null){
             throw new IllegalArgumentException("Status should be null for new reservation");
         }
+
+        if(!reservationToCreate.startDate().isBefore(reservationToCreate.endDate())){
+            throw new IllegalArgumentException("Start date must be 1 day earlier than end date");
+        }
+
         var entityToSave = new ReservationEntity(
                 null,
                 reservationToCreate.userId(),
@@ -61,7 +66,10 @@ public class ReservationService {
                 .orElseThrow(() -> new EntityNotFoundException("Reservation not found with id: " + id));
 
         if(reservationEntity.getStatus() != ReservationStatus.PENDING) {
-            throw new IllegalArgumentException("Cannot modify reservation: status=" + reservationEntity.getStatus());
+            throw new IllegalStateException("Cannot modify reservation: status=" + reservationEntity.getStatus());
+        }
+        if(!reservationToUpdate.startDate().isBefore(reservationToUpdate.endDate())){
+            throw new IllegalArgumentException("Start date must be 1 day earlier than end date");
         }
 
         var reservationToSave = new ReservationEntity(
@@ -78,9 +86,13 @@ public class ReservationService {
 
     @Transactional            //Указали @Transactional что бы метод выполнялся в транзакции
     public void cancelReservation(Long id) {
-        if(!repository.existsById(id)) {
-            throw new EntityNotFoundException("Not found reservation by id = " + id);
+        var reservation =  repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Reservation not found with id: " + id));
+
+        if(!reservation.getStatus().equals(ReservationStatus.PENDING)) {
+            throw new IllegalStateException("Cannot cancel reservation: status=" + reservation.getStatus());
         }
+
         repository.setStatus(id, ReservationStatus.CANCELLED);
         log.info(" Successfully cancelled reservation: id = {}", id);
     }
